@@ -929,3 +929,50 @@ Your full FixMyCity stack should now work locally with:
 * Node.js backend
 * Citizen frontend
 * Municipal frontend
+
+
+## Tools used 
+
+| Category               | Technology / Tool Stack                | Purpose                                 |
+| ---------------------- | -------------------------------------- | --------------------------------------- |
+| Frontend               | HTML5                                  | Structure of web pages                  |
+| Frontend               | CSS3                                   | Styling and UI design                   |
+| Frontend               | JavaScript (Vanilla JS)                | Frontend logic and interactivity        |
+| Frontend Server        | Python HTTP Server                     | Running frontend locally                |
+| Backend Runtime        | Node.js                                | Server-side runtime                     |
+| Backend Framework      | Express.js                             | REST API backend                        |
+| Backend Dev Tool       | Nodemon                                | Auto restart backend during development |
+| Database               | MongoDB Atlas                          | Cloud NoSQL database                    |
+| Database ODM           | Mongoose                               | MongoDB object modeling                 |
+| Authentication         | Firebase Authentication                | User authentication                     |
+| Authentication         | Google OAuth                           | Google Sign-In                          |
+| Authentication         | Firebase Admin SDK                     | Backend token verification              |
+| Authentication         | JWT (JSON Web Token)                   | Session/auth token handling             |
+| File Storage           | Google Drive                           | Store uploaded images/videos            |
+| Upload Middleware      | Google Apps Script                     | Upload bridge between backend and Drive |
+| Media Handling         | Base64 Encoding                        | File transfer encoding                  |
+| API Communication      | REST API                               | Frontend-backend communication          |
+| API Communication      | Fetch API                              | Sending API requests from frontend      |
+| Cloud Platform         | Firebase                               | Authentication ecosystem                |
+| Cloud Platform         | MongoDB Atlas                          | Managed cloud database                  |
+| Cloud Platform         | Google Cloud Ecosystem                 | Drive + Apps Script services            |
+| Optional CDN           | Cloudinary                             | Optional media hosting/CDN              |
+| Environment Management | dotenv (.env)                          | Store secrets/configs                   |
+| Security               | CORS                                   | Cross-origin request handling           |
+| Security               | Environment Variables                  | Secret protection                       |
+| Security               | Firebase Token Validation              | Secure authentication                   |
+| Security               | JWT Authentication                     | Protected routes                        |
+| Version Control        | Git                                    | Source control                          |
+| Version Control        | GitHub                                 | Repository hosting                      |
+| Deployment             | Netlify                                | Frontend hosting                        |
+| Deployment             | Render                                 | Backend hosting                         |
+| Deployment             | Railway                                | Alternative backend hosting             |
+| Development Tool       | npm                                    | Package manager                         |
+| Media Support          | Google Drive Preview URLs              | Video streaming                         |
+| Media Support          | Googleusercontent URLs                 | Image rendering                         |
+| Architecture           | Multi-Frontend Architecture            | Citizen + Municipal portals             |
+| Architecture           | RESTful Backend Architecture           | Structured API system                   |
+| Architecture           | Cloud-Based Storage Architecture       | Distributed file storage                |
+| Local Development      | localhost Ports                        | Local service separation                |
+| Local Development      | Terminal-based Multi-Service Execution | Run backend + frontends separately      |
+
