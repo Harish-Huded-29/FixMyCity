@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>FixMyCity — Create Account</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+<div id="toasts"></div>
+
+<div class="auth-page">
+  <div class="auth-glow tl"></div>
+  <div class="auth-glow br"></div>
+
+  <div class="auth-card" style="max-width:480px">
+    <div class="auth-logo">
+      <div class="auth-icon">🏙️</div>
+      <h2>Fix<span>My</span>City</h2>
+      <p id="subtitle">Create your account</p>
+    </div>
+
+    <!-- Google badge (shown in google mode) -->
+    <div id="google-badge" style="display:none;background:var(--bg4);border:1px solid var(--b1);border-radius:var(--r2);padding:11px 14px;align-items:center;gap:10px;margin-bottom:18px">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>
+      <div>
+        <div style="font-size:.85rem;font-weight:500;color:var(--t1)" id="g-name">Google Account</div>
+        <div style="font-size:.73rem;color:var(--t3)" id="g-email">email@gmail.com</div>
+      </div>
+      <span style="margin-left:auto;font-size:.68rem;background:var(--gbg);color:var(--green);padding:2px 8px;border-radius:var(--rf);border:1px solid var(--gbd)">Verified ✓</span>
+    </div>
+
+    <form onsubmit="handleRegister(event)">
+      <div class="frow">
+        <div class="fg">
+          <label class="label">Full Name <span class="req">*</span></label>
+          <div class="iw">
+            <i class="ti ti-user pre"></i>
+            <input class="inp" type="text" id="name" placeholder="Your full name" autocomplete="name" required>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="label">Phone Number <span class="req">*</span></label>
+          <div class="iw">
+            <i class="ti ti-phone pre"></i>
+            <input class="inp" type="tel" id="phone" placeholder="10-digit mobile" maxlength="10" pattern="[6-9][0-9]{9}" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="fg" id="email-group">
+        <label class="label">Email Address <span class="req">*</span></label>
+        <div class="iw">
+          <i class="ti ti-mail pre"></i>
+          <input class="inp" type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+      </div>
+
+      <div class="frow">
+        <div class="fg">
+          <label class="label">Password <span class="req">*</span></label>
+          <div class="iw">
+            <i class="ti ti-lock pre"></i>
+            <input class="inp" type="password" id="pwd" placeholder="Min 6 characters" id="pwd" required autocomplete="new-password">
+            <i class="ti ti-eye eye" id="eye1" onclick="toggleEye('pwd','eye1')"></i>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="label">Confirm Password <span class="req">*</span></label>
+          <div class="iw">
+            <i class="ti ti-lock pre"></i>
+            <input class="inp" type="password" id="cpwd" placeholder="Re-enter password" required autocomplete="new-password">
+            <i class="ti ti-eye eye" id="eye2" onclick="toggleEye('cpwd','eye2')"></i>
+          </div>
+          <div id="pwd-msg" style="font-size:.73rem;margin-top:3px"></div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div style="margin-bottom:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <label class="label" style="margin:0">Your Location</label>
+          <button type="button" class="btn btn-ghost btn-sm" id="detect-btn" onclick="detectLoc()">
+            <i class="ti ti-current-location"></i> Auto-Detect
+          </button>
+        </div>
+        <div id="detected-loc" style="display:none;background:var(--gbg);border:1px solid var(--gbd);border-radius:var(--r2);padding:8px 12px;margin-bottom:10px;font-size:.8rem;color:var(--green)">
+          <i class="ti ti-map-pin"></i> <span id="det-addr"></span>
+        </div>
+      </div>
+
+      <div class="frow" style="margin-bottom:10px">
+        <select class="sel" id="r-state"><option value="">Select State</option></select>
+        <select class="sel" id="r-dist"><option value="">Select District</option></select>
+      </div>
+      <div class="frow" style="margin-bottom:14px">
+        <select class="sel" id="r-city"><option value="">Select City</option></select>
+        <input class="inp" type="text" id="r-pin" placeholder="Pincode" maxlength="6" pattern="[0-9]{6}">
+      </div>
+
+      <div id="reg-err" class="form-err hidden" style="margin-bottom:10px;padding:9px 12px;background:var(--rbd);border-radius:var(--r2);border:1px solid rgba(239,68,68,.2)"></div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg" id="reg-btn">
+        <i class="ti ti-user-plus"></i> Create Account
+      </button>
+    </form>
+
+    <div class="auth-link">
+      Already have an account? <a href="login.html">Login</a>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+if (Auth.isLoggedIn()) window.location.href = '/';
+
+const isGoogle = new URLSearchParams(window.location.search).get('mode') === 'google';
+let googleToken = null;
+
+// Firebase init
+const firebaseConfig = {
+  apiKey: "AIzaSyCbU-zqQpFAhO4TwigqpggWKwdhTLDyUqg",
+  authDomain: "notepad-zoip.firebaseapp.com",
+  databaseURL: "https://notepad-zoip-default-rtdb.firebaseio.com",
+  projectId: "notepad-zoip",
+  storageBucket: "notepad-zoip.firebasestorage.app",
+  messagingSenderId: "990445742746",
+  appId: "1:990445742746:web:1a8d59d14f254c39c5cd23"
+};
+try { firebase.initializeApp(firebaseConfig); window.fbAuth = firebase.auth(); } catch(e){}
+
+// Google mode setup
+if (isGoogle) {
+  googleToken = sessionStorage.getItem('fmc_gt');
+  if (!googleToken) { window.location.href = 'login.html'; }
+  const gp = JSON.parse(sessionStorage.getItem('fmc_gp') || '{}');
+  document.getElementById('subtitle').textContent = 'Complete your profile to continue';
+  const badge = document.getElementById('google-badge');
+  badge.style.display = 'flex';
+  document.getElementById('g-name').textContent = gp.name || '';
+  document.getElementById('g-email').textContent = gp.email || '';
+  if (gp.name) document.getElementById('name').value = gp.name;
+  document.getElementById('email-group').style.display = 'none';
+  document.getElementById('email').removeAttribute('required');
+}
+
+// Init location cascades
+document.addEventListener('DOMContentLoaded', async () => {
+  await Loc.cascade(
+    document.getElementById('r-state'),
+    document.getElementById('r-dist'),
+    document.getElementById('r-city')
+  );
+});
+
+function toggleEye(inputId, eyeId) {
+  const el = document.getElementById(inputId);
+  const ic = document.getElementById(eyeId);
+  if (el.type === 'password') { el.type='text'; ic.className='ti ti-eye-off eye'; }
+  else { el.type='password'; ic.className='ti ti-eye eye'; }
+}
+
+// Password match check
+document.getElementById('cpwd').addEventListener('input', function() {
+  const pwd = document.getElementById('pwd').value;
+  const msg = document.getElementById('pwd-msg');
+  if (!this.value) { msg.textContent=''; return; }
+  if (this.value === pwd) { msg.style.color='var(--green)'; msg.textContent='✓ Passwords match'; }
+  else { msg.style.color='var(--red)'; msg.textContent='✗ Passwords do not match'; }
+});
+
+async function detectLoc() {
+  const btn = document.getElementById('detect-btn');
+  btn.disabled=true; btn.innerHTML='<span class="btn-spin"></span>';
+  try {
+    const loc = await Loc.autoDetect();
+    Loc.setVals(
+      document.getElementById('r-state'),
+      document.getElementById('r-dist'),
+      document.getElementById('r-city'),
+      loc
+    );
+    if (loc.pincode) document.getElementById('r-pin').value = loc.pincode;
+    document.getElementById('det-addr').textContent = `${loc.city}, ${loc.state} ${loc.pincode}`;
+    document.getElementById('detected-loc').style.display = 'block';
+    toast('Location detected!','ok');
+  } catch {
+    toast('Could not detect location. Select manually.','err');
+  } finally {
+    btn.disabled=false; btn.innerHTML='<i class="ti ti-current-location"></i> Auto-Detect';
+  }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('reg-err');
+  el.textContent=msg; el.classList.remove('hidden');
+}
+function hideErr() { document.getElementById('reg-err').classList.add('hidden'); }
+
+async function handleRegister(e) {
+  e.preventDefault(); hideErr();
+  const name  = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const pwd   = document.getElementById('pwd').value;
+  const cpwd  = document.getElementById('cpwd').value;
+  const state = document.getElementById('r-state').value;
+  const dist  = document.getElementById('r-dist').value;
+  const city  = document.getElementById('r-city').value;
+  const pin   = document.getElementById('r-pin').value;
+
+  if (pwd !== cpwd) { showErr('Passwords do not match'); return; }
+  if (pwd.length < 6) { showErr('Password must be at least 6 characters'); return; }
+
+  const btn = document.getElementById('reg-btn');
+  btn.disabled=true; btn.innerHTML='<span class="btn-spin"></span> Creating Account…';
+
+  const location = { state, district:dist, city, pincode:pin };
+
+  try {
+    let res;
+    if (isGoogle) {
+      res = await api.post('/auth/google/register', { idToken:googleToken, name, phone, password:pwd, location });
+      sessionStorage.removeItem('fmc_gt'); sessionStorage.removeItem('fmc_gp');
+    } else {
+      res = await api.post('/auth/register', { name, email, phone, password:pwd, location });
+    }
+    Auth.set(res.token, res.user);
+    if (city) { localStorage.setItem('fmc_city',city); localStorage.setItem('fmc_state',state); }
+    toast(`Welcome to FixMyCity, ${name}! 🎉`, 'ok');
+    setTimeout(() => window.location.href='/', 700);
+  } catch(err) {
+    showErr(err.message);
+    btn.disabled=false; btn.innerHTML='<i class="ti ti-user-plus"></i> Create Account';
+  }
+}
+</script>
+</body>
+</html>

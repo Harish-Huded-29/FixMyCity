@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: fixmycity-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Add all your .env variables in Render dashboard
+      # Do NOT put secrets in this file

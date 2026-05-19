@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>FixMyCity — Feed</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body>
+<div id="toasts"></div>
+<div class="sb-overlay" id="sb-overlay"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-mark">🏙️</div>
+      <span class="sb-name">Fix<span>My</span>City</span>
+    </div>
+    <nav class="sb-nav">
+      <span class="sb-section">Main</span>
+      <div class="sb-item active"><i class="ti ti-home"></i>Feed</div>
+      <div class="sb-item" onclick="window.location.href='/pages/post-issue.html'"><i class="ti ti-plus-circle"></i>Report Issue</div>
+      <div class="sb-item" onclick="window.location.href='/pages/profile.html'"><i class="ti ti-user-circle"></i>My Profile</div>
+      <span class="sb-section">Quick Filters</span>
+      <div class="sb-item" onclick="applyStatus('open',null)"><i class="ti ti-circle-dot" style="color:var(--blue)"></i>Open Issues</div>
+      <div class="sb-item" onclick="applyStatus('in_progress',null)"><i class="ti ti-loader" style="color:var(--amber)"></i>In Progress</div>
+      <div class="sb-item" onclick="applyStatus('resolved',null)"><i class="ti ti-circle-check" style="color:var(--green)"></i>Resolved</div>
+      <div class="sb-item" onclick="applyStatus('reopened',null)"><i class="ti ti-refresh-alert" style="color:var(--red)"></i>Reopened</div>
+      <span class="sb-section">Account</span>
+      <div class="sb-item" data-action="logout"><i class="ti ti-logout"></i>Logout</div>
+    </nav>
+    <div class="sb-foot">
+      <div class="sb-user" id="sidebar-user"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="ham" id="ham-btn"><i class="ti ti-menu-2"></i></div>
+      <div class="topbar-logo">🏙️ Fix<span>My</span>City</div>
+      <span class="topbar-title">Feed</span>
+      <div class="search-box">
+        <i class="ti ti-search"></i>
+        <input class="search-inp" id="search-inp" placeholder="Search issues…" oninput="handleSearch(this.value)">
+      </div>
+      <div class="tb-right">
+        <button class="btn btn-secondary btn-sm" id="loc-btn" onclick="openLocOverlay()">
+          <i class="ti ti-map-pin"></i><span id="loc-label">All Areas</span>
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='/pages/post-issue.html'">
+          <i class="ti ti-plus"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="wrap">
+        <div class="fbar">
+          <div class="chip on" data-s="" onclick="applyStatus('',this)"><i class="ti ti-layout-list"></i>All</div>
+          <div class="chip" data-s="open" onclick="applyStatus('open',this)">🔵 Open</div>
+          <div class="chip" data-s="in_progress" onclick="applyStatus('in_progress',this)">🟡 In Progress</div>
+          <div class="chip" data-s="resolved" onclick="applyStatus('resolved',this)">✅ Resolved</div>
+          <div class="chip" data-s="reopened" onclick="applyStatus('reopened',this)">🔴 Reopened</div>
+          <div class="chip" onclick="openCatOverlay()"><i class="ti ti-category"></i>Category</div>
+          <div class="chip" style="padding:0">
+            <select id="sort-sel" onchange="st.sort=this.value;loadFeed()"
+              style="background:none;border:none;color:inherit;font-size:.77rem;font-family:inherit;cursor:pointer;outline:none;padding:5px 12px">
+              <option value="newest">Newest</option>
+              <option value="popular">Popular</option>
+              <option value="comments">Most Discussed</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="feed"><div class="load-box"><div class="spinner"></div></div></div>
+
+        <div id="load-more" style="text-align:center;padding:16px;display:none">
+          <button class="btn btn-secondary" onclick="loadMore()">
+            <i class="ti ti-arrow-down"></i> Load More
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bn-row">
+    <div class="bn-tab active"><i class="ti ti-home"></i><span>Feed</span></div>
+    <div class="bn-tab" onclick="window.location.href='/pages/post-issue.html'">
+      <div class="bn-fab"><i class="ti ti-plus"></i></div>
+    </div>
+    <div class="bn-tab" onclick="window.location.href='/pages/profile.html'">
+      <i class="ti ti-user-circle"></i><span>Profile</span>
+    </div>
+  </div>
+</nav>
+
+<!-- LOCATION OVERLAY -->
+<div class="overlay" id="loc-overlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-top">
+      <h3>📍 Filter by Location</h3>
+      <div class="modal-x" onclick="document.getElementById('loc-overlay').classList.remove('on')"><i class="ti ti-x"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="fg"><label class="label">State</label><select class="sel" id="f-state"></select></div>
+      <div class="fg"><label class="label">District</label><select class="sel" id="f-dist"></select></div>
+      <div class="fg"><label class="label">City</label><select class="sel" id="f-city"></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="clearLoc()">Clear</button>
+      <button class="btn btn-primary" onclick="applyLoc()"><i class="ti ti-check"></i> Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY OVERLAY -->
+<div class="overlay" id="cat-overlay">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-top">
+      <h3>Filter by Category</h3>
+      <div class="modal-x" onclick="document.getElementById('cat-overlay').classList.remove('on')"><i class="ti ti-x"></i></div>
+    </div>
+    <div class="modal-body">
+      <div id="cat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:7px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GUEST BANNER -->
+<div id="guest-banner" style="display:none;position:fixed;bottom:calc(var(--bnh)+10px);left:12px;right:12px;z-index:150">
+  <div style="background:var(--a);border-radius:var(--r3);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 4px 24px var(--ag)">
+    <span style="font-size:.82rem;color:#fff;font-weight:500">Join FixMyCity — report issues 🏘️</span>
+    <button class="btn btn-sm" style="background:#fff;color:var(--a);font-weight:600;white-space:nowrap"
+      onclick="window.location.href='/pages/login.html'">Login / Register</button>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+const st = { page:1, status:'', category:'', sort:'newest', city:'', state:'', district:'', loading:false, hasMore:true };
+
+// Issue card renderer
+function makeCard(issue) {
+  const author = issue.isAnonymous ? {name:'Anonymous',profilePhoto:{url:''}} : issue.postedBy;
+  const n = Math.min((issue.media||[]).length, 4);
+  const extra = issue.media?.length > 4 ? issue.media.length - 4 : 0;
+  const cls = ['','g1','g2','g3','g4'][n] || 'g4';
+  const mediaHtml = n > 0 ? `<div class="mgrid ${cls}">${
+    issue.media.slice(0,n).map((m,i) => {
+      const isLast = extra>0 && i===n-1;
+      const inner = m.resourceType==='video'
+        ? `<div style="width:100%;height:100%;background:var(--bg5);display:flex;align-items:center;justify-content:center;color:var(--t3)"><i class="ti ti-video" style="font-size:28px"></i></div>`
+        : `<img src="${m.url}" alt="" loading="lazy">`;
+      return `<div class="mi">${inner}${isLast?`<div class="mi-more">+${extra+1}</div>`:''}</div>`;
+    }).join('')
+  }</div>` : '';
+
+  const sbadge = {
+    open:'<span class="badge b-open">🔵 Open</span>',
+    in_progress:'<span class="badge b-in_progress">🟡 In Progress</span>',
+    resolved:'<span class="badge b-resolved">✅ Resolved</span>',
+    reopened:'<span class="badge b-reopened">🔴 Reopened</span>',
+    closed:'<span class="badge b-closed">⚫ Closed</span>',
+  };
+  const av = author?.profilePhoto?.url
+    ? `<div class="ic-av"><img src="${author.profilePhoto.url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+    : `<div class="ic-av">${(author?.name||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?'}</div>`;
+
+  return `<article class="issue-card ${issue.status}" onclick="window.location.href='/pages/issue-detail.html?id=${issue._id}'">
+    <div class="ic-top">
+      ${av}
+      <div class="ic-info">
+        <div class="ic-ar">
+          <span class="ic-name">${author?.name||'Anonymous'}</span>
+          ${issue.isAnonymous?'<span class="badge" style="background:var(--bg5);color:var(--t3);font-size:.6rem">Anon</span>':''}
+          <span class="cat-b"><i class="ti ${CATS[issue.category]?.icon||'ti-map-pin'}"></i>${CATS[issue.category]?.label||issue.category}</span>
+          ${sbadge[issue.status]||''}
+        </div>
+        <div class="ic-place"><i class="ti ti-map-pin"></i>${issue.location.city}, ${issue.location.district}</div>
+      </div>
+      <span class="ic-when">${ago(issue.createdAt)}</span>
+    </div>
+    <div class="ic-body">
+      <div class="ic-title">${issue.title}</div>
+      <div class="ic-desc">${issue.description}</div>
+      ${mediaHtml}
+    </div>
+    <div class="ic-foot">
+      <div class="ic-act ${issue._uv?'up':''}" onclick="doUpvote(event,'${issue._id}',this)">
+        <i class="ti ti-arrow-up"></i><span>${issue.upvoteCount||0}</span>
+      </div>
+      <div class="ic-act"><i class="ti ti-message-circle"></i><span>${issue.commentCount||0}</span></div>
+      <div class="ic-act" onclick="shareWA(event,'${issue._id}',${JSON.stringify(issue.title)})">
+        <i class="ti ti-brand-whatsapp" style="color:#25D366"></i>
+      </div>
+      <div class="ic-act ic-ml" onclick="shareCopy(event,'${issue._id}')">
+        <i class="ti ti-share-2"></i>
+      </div>
+    </div>
+    ${issue.resolution?.resolvedAt?`<div class="res-bar"><i class="ti ti-circle-check"></i>Resolved on ${fmtDate(issue.resolution.resolvedAt)}${issue.resolution.description?' · '+issue.resolution.description.slice(0,50)+'…':''}</div>`:''}
+  </article>`;
+}
+
+function shareWA(e, id, title) {
+  e.stopPropagation();
+  const url = encodeURIComponent(`${window.location.origin}/pages/issue-detail.html?id=${id}`);
+  const txt = encodeURIComponent(`Check out this civic issue on FixMyCity: ${title}`);
+  window.open(`https://wa.me/?text=${txt}%20${url}`, '_blank');
+}
+function shareCopy(e, id) {
+  e.stopPropagation();
+  navigator.clipboard.writeText(`${window.location.origin}/pages/issue-detail.html?id=${id}`)
+    .then(() => toast('Link copied!','ok'));
+}
+async function doUpvote(e, id, btn) {
+  e.stopPropagation();
+  if (!Auth.isLoggedIn()) { toast('Login to upvote','err'); setTimeout(()=>window.location.href='/pages/login.html',700); return; }
+  try {
+    const r = await api.post(`/issues/${id}/upvote`);
+    btn.querySelector('span').textContent = r.upvoteCount;
+    btn.classList.toggle('up', r.hasUpvoted);
+  } catch(err){ toast(err.message,'err'); }
+}
+
+async function loadFeed(reset=true) {
+  if (st.loading) return;
+  st.loading = true;
+  if (reset) { st.page=1; document.getElementById('feed').innerHTML='<div class="load-box"><div class="spinner"></div></div>'; }
+  try {
+    const p = new URLSearchParams({ page:st.page, limit:10, sort:st.sort });
+    if (st.status)   p.set('status',   st.status);
+    if (st.category) p.set('category', st.category);
+    if (st.city)     p.set('city',     st.city);
+    if (st.district) p.set('district', st.district);
+    if (st.state)    p.set('state',    st.state);
+    const data = await api.get(`/issues?${p}`);
+    const el = document.getElementById('feed');
+    if (reset) el.innerHTML = '';
+    if (!data.issues?.length && reset) {
+      el.innerHTML=`<div class="empty"><div class="empty-icon"><i class="ti ti-mood-empty"></i></div><h3>No issues found</h3><p>Be the first to report a civic problem.</p><button class="btn btn-primary" onclick="window.location.href='/pages/post-issue.html'"><i class="ti ti-plus"></i> Report Issue</button></div>`;
+    } else {
+      data.issues.forEach(i => el.insertAdjacentHTML('beforeend', makeCard(i)));
+    }
+    st.hasMore = data.currentPage < data.totalPages;
+    document.getElementById('load-more').style.display = st.hasMore ? 'block' : 'none';
+  } catch(err) {
+    document.getElementById('feed').innerHTML=`<div class="empty"><div class="empty-icon"><i class="ti ti-wifi-off"></i></div><h3>Connection Error</h3><p>${err.message}</p><button class="btn btn-secondary" onclick="loadFeed()"><i class="ti ti-refresh"></i> Retry</button></div>`;
+  } finally { st.loading = false; }
+}
+
+function loadMore() { st.page++; loadFeed(false); }
+
+function applyStatus(status, btn) {
+  st.status = status;
+  document.querySelectorAll('.chip[data-s]').forEach(c=>c.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  loadFeed();
+}
+
+let sTimer;
+function handleSearch(v) { clearTimeout(sTimer); sTimer=setTimeout(()=>{ st.search=v; loadFeed(); },400); }
+
+async function openLocOverlay() {
+  document.getElementById('loc-overlay').classList.add('on');
+  await Loc.cascade(document.getElementById('f-state'), document.getElementById('f-dist'), document.getElementById('f-city'));
+  if (st.state) Loc.setVals(document.getElementById('f-state'), document.getElementById('f-dist'), document.getElementById('f-city'), {state:st.state,district:st.district,city:st.city});
+}
+function applyLoc() {
+  st.state=document.getElementById('f-state').value;
+  st.district=document.getElementById('f-dist').value;
+  st.city=document.getElementById('f-city').value;
+  document.getElementById('loc-label').textContent = st.city||st.district||st.state||'All Areas';
+  document.getElementById('loc-overlay').classList.remove('on');
+  loadFeed();
+}
+function clearLoc() {
+  st.state=st.district=st.city='';
+  document.getElementById('loc-label').textContent='All Areas';
+  document.getElementById('loc-overlay').classList.remove('on');
+  loadFeed();
+}
+function openCatOverlay() {
+  document.getElementById('cat-grid').innerHTML = Object.entries(CATS).map(([k,v])=>`
+    <div class="chip ${st.category===k?'on':''}" style="justify-content:flex-start;gap:6px" onclick="pickCat('${k}',this)">
+      <i class="ti ${v.icon}"></i>${v.label}</div>`).join('');
+  document.getElementById('cat-overlay').classList.add('on');
+}
+function pickCat(k, btn) {
+  st.category = st.category===k?'':k;
+  document.querySelectorAll('#cat-grid .chip').forEach(c=>c.classList.remove('on'));
+  if (st.category) btn.classList.add('on');
+  document.getElementById('cat-overlay').classList.remove('on');
+  loadFeed();
+}
+
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on')}));
+document.getElementById('ham-btn').addEventListener('click',()=>{document.getElementById('sidebar').classList.add('on');document.getElementById('sb-overlay').classList.add('on')});
+document.getElementById('sb-overlay').addEventListener('click',()=>{document.getElementById('sidebar').classList.remove('on');document.getElementById('sb-overlay').classList.remove('on')});
+document.querySelectorAll('[data-action="logout"]').forEach(b=>b.addEventListener('click',logout));
+
+document.addEventListener('DOMContentLoaded', async () => {
+  renderSidebarUser();
+  if (!Auth.isLoggedIn()) document.getElementById('guest-banner').style.display='block';
+  const sc=localStorage.getItem('fmc_city'), ss=localStorage.getItem('fmc_state');
+  if (sc) { st.city=sc; st.state=ss||''; document.getElementById('loc-label').textContent=sc; }
+  else {
+    try {
+      const loc = await Loc.autoDetect();
+      if (loc.city) { st.city=loc.city; st.state=loc.state; document.getElementById('loc-label').textContent=loc.city; localStorage.setItem('fmc_city',loc.city); localStorage.setItem('fmc_state',loc.state); }
+    } catch {}
+  }
+  loadFeed();
+});
+</script>
+</body>
+</html>

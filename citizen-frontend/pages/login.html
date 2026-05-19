@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>FixMyCity — Login</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+<div id="toasts"></div>
+
+<div class="auth-page">
+  <div class="auth-glow tl"></div>
+  <div class="auth-glow br"></div>
+
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-icon">🏙️</div>
+      <h2>Fix<span>My</span>City</h2>
+      <p>Login to report and track civic issues</p>
+    </div>
+
+    <!-- Google Sign In -->
+    <button class="btn btn-google btn-full" id="google-btn" onclick="loginGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="divider">or continue with email</div>
+
+    <form onsubmit="loginEmail(event)">
+      <div class="fg">
+        <label class="label">Email Address</label>
+        <div class="iw">
+          <i class="ti ti-mail pre"></i>
+          <input class="inp" type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="label">Password</label>
+        <div class="iw">
+          <i class="ti ti-lock pre"></i>
+          <input class="inp" type="password" id="pwd" placeholder="Enter your password" autocomplete="current-password" required>
+          <i class="ti ti-eye eye" id="eye" onclick="toggleEye('pwd','eye')"></i>
+        </div>
+      </div>
+
+      <!-- Remember Me -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <label class="check-row">
+          <input type="checkbox" id="remember">
+          <span>Remember me</span>
+        </label>
+      </div>
+
+      <div id="err-msg" class="form-err hidden" style="margin-bottom:10px;padding:9px 12px;background:var(--rbd);border-radius:var(--r2);border:1px solid rgba(239,68,68,.2)"></div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg" id="login-btn">
+        <i class="ti ti-login"></i> Login
+      </button>
+    </form>
+
+    <div class="auth-link">
+      Don't have an account? <a href="register.html">Create Account</a>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+// Already logged in → redirect
+if (Auth.isLoggedIn()) window.location.href = '/';
+
+// Firebase config — fill these in
+const firebaseConfig = {
+  apiKey: "AIzaSyCbU-zqQpFAhO4TwigqpggWKwdhTLDyUqg",
+  authDomain: "notepad-zoip.firebaseapp.com",
+  databaseURL: "https://notepad-zoip-default-rtdb.firebaseio.com",
+  projectId: "notepad-zoip",
+  storageBucket: "notepad-zoip.firebasestorage.app",
+  messagingSenderId: "990445742746",
+  appId: "1:990445742746:web:1a8d59d14f254c39c5cd23"
+};
+let fbAuth = null;
+try { firebase.initializeApp(firebaseConfig); fbAuth = firebase.auth(); window.fbAuth = fbAuth; } catch(e) { console.warn('Firebase not configured'); }
+
+// Pre-fill remembered email
+const rem = localStorage.getItem('fmc_remember');
+if (rem) { document.getElementById('email').value = rem; document.getElementById('remember').checked = true; }
+
+function toggleEye(inputId, eyeId) {
+  const el = document.getElementById(inputId);
+  const ic = document.getElementById(eyeId);
+  if (el.type === 'password') { el.type = 'text'; ic.className = 'ti ti-eye-off eye'; }
+  else { el.type = 'password'; ic.className = 'ti ti-eye eye'; }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('err-msg');
+  el.textContent = msg; el.classList.remove('hidden');
+}
+function hideErr() { document.getElementById('err-msg').classList.add('hidden'); }
+
+async function loginGoogle() {
+  if (!fbAuth) { toast('Firebase not configured yet — check SETUP_GUIDE.md', 'err'); return; }
+  const btn = document.getElementById('google-btn');
+  btn.disabled = true; btn.textContent = 'Connecting…';
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await fbAuth.signInWithPopup(provider);
+    const idToken = await result.user.getIdToken();
+    const res = await api.post('/auth/google', { idToken });
+    if (res.isNewUser) {
+      sessionStorage.setItem('fmc_gt', idToken);
+      sessionStorage.setItem('fmc_gp', JSON.stringify(res.googleProfile));
+      window.location.href = 'register.html?mode=google';
+    } else {
+      Auth.set(res.token, res.user);
+      toast(`Welcome back, ${res.user.name}! 👋`, 'ok');
+      setTimeout(() => window.location.href = '/', 600);
+    }
+  } catch(err) {
+    toast(err.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg> Continue with Google';
+  }
+}
+
+async function loginEmail(e) {
+  e.preventDefault(); hideErr();
+  const email = document.getElementById('email').value.trim();
+  const pwd   = document.getElementById('pwd').value;
+  const rem   = document.getElementById('remember').checked;
+  const btn   = document.getElementById('login-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="btn-spin"></span> Logging in…';
+  try {
+    const res = await api.post('/auth/login', { email, password: pwd });
+    if (rem) localStorage.setItem('fmc_remember', email);
+    else localStorage.removeItem('fmc_remember');
+    Auth.set(res.token, res.user);
+    toast(`Welcome back, ${res.user.name}! 👋`, 'ok');
+    setTimeout(() => window.location.href = '/', 500);
+  } catch(err) {
+    showErr(err.message);
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i> Login';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>FixMyCity — Report Issue</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body>
+<div id="toasts"></div>
+<div class="sb-overlay" id="sb-overlay"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-mark">🏙️</div>
+      <span class="sb-name">Fix<span>My</span>City</span>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-item" onclick="window.location.href='/'"><i class="ti ti-home"></i>Feed</div>
+      <div class="sb-item active"><i class="ti ti-plus-circle"></i>Report Issue</div>
+      <div class="sb-item" onclick="goPage('profile')"><i class="ti ti-user-circle"></i>My Profile</div>
+      <div class="sb-item" data-action="logout"><i class="ti ti-logout"></i>Logout</div>
+    </nav>
+    <div class="sb-foot"><div class="sb-user" id="sidebar-user"></div></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="ham" id="ham-btn"><i class="ti ti-menu-2"></i></div>
+      <div class="back-btn" onclick="safeBack()"><i class="ti ti-arrow-left"></i><span>Back</span></div>
+      <span class="topbar-title">Report a Civic Issue</span>
+    </header>
+
+    <div class="page">
+      <div class="wrap">
+        <form id="issue-form" onsubmit="submitIssue(event)">
+
+          <!-- Title -->
+          <div class="fg">
+            <label class="label">Issue Title <span class="req">*</span></label>
+            <input class="inp" type="text" id="title" placeholder="e.g. Deep pothole near bus stop on MG Road" maxlength="150" required>
+            <div class="form-hint"><span id="tc">0</span>/150</div>
+          </div>
+
+          <!-- Category -->
+          <div class="fg">
+            <label class="label">Category <span class="req">*</span></label>
+            <div id="cat-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:7px"></div>
+            <input type="hidden" id="cat-val" required>
+          </div>
+
+          <!-- Description -->
+          <div class="fg">
+            <label class="label">Description <span class="req">*</span></label>
+            <textarea class="ta" id="desc" placeholder="Describe the issue in detail. How long has it been there? Who is affected? What danger does it cause?" rows="5" maxlength="2000" required></textarea>
+            <div class="form-hint"><span id="dc">0</span>/2000</div>
+          </div>
+
+          <!-- Media -->
+          <div class="fg">
+            <label class="label">Photos / Videos <span style="color:var(--t3);font-weight:400">(up to 5 files, max 50MB each)</span></label>
+            <div class="drop-zone" id="drop-zone" onclick="document.getElementById('media-inp').click()">
+              <i class="ti ti-photo-plus"></i>
+              <p>Click or <strong>drag & drop</strong> photos/videos here</p>
+              <p style="font-size:.73rem;margin-top:3px">JPG, PNG, WebP, MP4, MOV supported</p>
+            </div>
+            <input type="file" id="media-inp" accept="image/*,video/*" multiple style="display:none" onchange="addFiles(this.files)">
+            <div class="previews-grid" id="previews"></div>
+          </div>
+
+          <!-- Location -->
+          <div class="fg">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <label class="label" style="margin:0">Location of Issue <span class="req">*</span></label>
+              <button type="button" class="btn btn-ghost btn-sm" id="loc-detect-btn" onclick="detectLoc()">
+                <i class="ti ti-current-location"></i> Auto-Detect
+              </button>
+            </div>
+            <div id="det-banner" style="display:none;background:var(--gbg);border:1px solid var(--gbd);border-radius:var(--r2);padding:9px 13px;margin-bottom:10px;font-size:.8rem;color:var(--green)">
+              <i class="ti ti-map-pin"></i> <span id="det-text"></span>
+            </div>
+            <div class="frow" style="margin-bottom:10px">
+              <select class="sel" id="p-state" required><option value="">Select State *</option></select>
+              <select class="sel" id="p-dist"  required><option value="">Select District *</option></select>
+            </div>
+            <div class="frow" style="margin-bottom:10px">
+              <select class="sel" id="p-city"  required><option value="">Select City *</option></select>
+              <input class="inp" type="text" id="p-pin" placeholder="Pincode" maxlength="6">
+            </div>
+            <input class="inp" type="text" id="p-addr" placeholder="Nearby landmark or street address (optional)">
+            <input type="hidden" id="p-lat">
+            <input type="hidden" id="p-lng">
+          </div>
+
+          <!-- Anonymous toggle -->
+          <div class="fg">
+            <label class="tog-row" for="anon-tog">
+              <div class="tog">
+                <input type="checkbox" id="anon-tog">
+                <div class="tog-track"></div>
+              </div>
+              <div class="tog-info">
+                <strong>Post Anonymously</strong>
+                <span>Your name and profile will be hidden from this post</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Error -->
+          <div id="form-err" class="hidden" style="color:var(--red);font-size:.85rem;margin-bottom:14px;padding:10px 14px;background:var(--rbd);border-radius:var(--r2);border:1px solid rgba(239,68,68,.25)"></div>
+
+          <!-- Submit -->
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button type="button" class="btn btn-secondary" onclick="safeBack()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" style="flex:1">
+              <i class="ti ti-send"></i> Submit Issue Report
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bn-row">
+    <div class="bn-tab" onclick="window.location.href='/'"><i class="ti ti-home"></i><span>Feed</span></div>
+    <div class="bn-tab active"><div class="bn-fab"><i class="ti ti-plus"></i></div></div>
+    <div class="bn-tab" onclick="goPage('profile')"><i class="ti ti-user-circle"></i><span>Profile</span></div>
+  </div>
+</nav>
+
+<script src="../js/app.js"></script>
+<script>
+function safeBack() {
+  if (document.referrer && document.referrer.includes(window.location.hostname)) history.back();
+  else window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!requireAuth()) return;
+
+  // Sidebar mobile
+  document.getElementById('ham-btn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.add('on');
+    document.getElementById('sb-overlay').classList.add('on');
+  });
+  document.getElementById('sb-overlay').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('on');
+    document.getElementById('sb-overlay').classList.remove('on');
+  });
+
+  // Location cascade
+  await Loc.cascade(
+    document.getElementById('p-state'),
+    document.getElementById('p-dist'),
+    document.getElementById('p-city')
+  );
+
+  // Pre-fill saved city
+  const sc = localStorage.getItem('fmc_city');
+  const ss = localStorage.getItem('fmc_state');
+  if (sc && ss) {
+    setTimeout(() => {
+      Loc.setVals(
+        document.getElementById('p-state'),
+        document.getElementById('p-dist'),
+        document.getElementById('p-city'),
+        { state:ss, city:sc }
+      );
+    }, 300);
+  }
+
+  // Build category grid
+  buildCatGrid();
+
+  // Character counters
+  document.getElementById('title').addEventListener('input', function() {
+    document.getElementById('tc').textContent = this.value.length;
+  });
+  document.getElementById('desc').addEventListener('input', function() {
+    document.getElementById('dc').textContent = this.value.length;
+  });
+});
+
+// ---- CATEGORY GRID ----
+function buildCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = Object.entries(CATS).map(([k,v]) => `
+    <div class="chip" data-k="${k}" onclick="selectCat('${k}',this)"
+      style="justify-content:flex-start;gap:6px;padding:9px 12px">
+      <i class="ti ${v.icon}"></i>${v.label}
+    </div>`).join('');
+}
+
+function selectCat(k, btn) {
+  document.querySelectorAll('#cat-grid .chip').forEach(c => c.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('cat-val').value = k;
+}
+
+// ---- FILE UPLOAD ----
+let files = [];
+
+function addFiles(newFiles) {
+  const allowed = ['image/jpeg','image/png','image/webp','video/mp4','video/quicktime'];
+  Array.from(newFiles).forEach(f => {
+    if (files.length >= 5) { toast('Maximum 5 files allowed','err'); return; }
+    if (!allowed.includes(f.type)) { toast(`${f.name}: unsupported format`,'err'); return; }
+    files.push(f);
+  });
+  renderPreviews();
+}
+
+function renderPreviews() {
+  const container = document.getElementById('previews');
+  container.innerHTML = '';
+  files.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'prev';
+    const url = URL.createObjectURL(f);
+    div.innerHTML = (f.type.startsWith('video/')
+      ? `<video src="${url}" style="width:100%;height:80px;object-fit:cover"></video>`
+      : `<img src="${url}" style="width:100%;height:80px;object-fit:cover">`)
+      + `<div class="prev-rm" onclick="removeFile(${i})"><i class="ti ti-x"></i></div>`;
+    container.appendChild(div);
+  });
+}
+
+function removeFile(i) {
+  files.splice(i, 1);
+  renderPreviews();
+}
+
+// Drag & drop
+const dz = document.getElementById('drop-zone');
+if (dz) {
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('on'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('on'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('on');
+    addFiles(e.dataTransfer.files);
+  });
+}
+
+// ---- AUTO DETECT ----
+async function detectLoc() {
+  const btn = document.getElementById('loc-detect-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="btn-spin"></span>';
+  try {
+    const loc = await Loc.autoDetect();
+    Loc.setVals(
+      document.getElementById('p-state'),
+      document.getElementById('p-dist'),
+      document.getElementById('p-city'),
+      loc
+    );
+    if (loc.pincode) document.getElementById('p-pin').value = loc.pincode;
+    if (loc.address) document.getElementById('p-addr').value = loc.address.split(',').slice(0,3).join(',');
+    document.getElementById('p-lat').value = loc.lat;
+    document.getElementById('p-lng').value = loc.lng;
+    document.getElementById('det-text').textContent = `${loc.city}, ${loc.state} ${loc.pincode}`;
+    document.getElementById('det-banner').style.display = 'block';
+    toast('Location detected!','ok');
+  } catch {
+    toast('Location unavailable. Please select manually.','err');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-current-location"></i> Auto-Detect';
+  }
+}
+
+// ---- SUBMIT ----
+async function submitIssue(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('form-err');
+  errEl.classList.add('hidden');
+
+  const cat = document.getElementById('cat-val').value;
+  if (!cat) { errEl.textContent='Please select a category'; errEl.classList.remove('hidden'); return; }
+
+  const state = document.getElementById('p-state').value;
+  const dist  = document.getElementById('p-dist').value;
+  const city  = document.getElementById('p-city').value;
+  if (!state || !dist || !city) {
+    errEl.textContent='Please select State, District, and City';
+    errEl.classList.remove('hidden'); return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="btn-spin"></span> Submitting…';
+
+  const fd = new FormData();
+  fd.append('title',       document.getElementById('title').value.trim());
+  fd.append('description', document.getElementById('desc').value.trim());
+  fd.append('category',    cat);
+  fd.append('isAnonymous', document.getElementById('anon-tog').checked);
+  fd.append('location', JSON.stringify({
+    state, district:dist, city,
+    pincode: document.getElementById('p-pin').value,
+    address: document.getElementById('p-addr').value,
+    coordinates: {
+      lat: document.getElementById('p-lat').value || null,
+      lng: document.getElementById('p-lng').value || null,
+    }
+  }));
+  files.forEach(f => fd.append('media', f));
+
+  try {
+    const res = await api.upload('/issues', fd);
+    toast('Issue reported successfully! 🎉','ok');
+    setTimeout(() => window.location.href = `/pages/issue-detail.html?id=${res.issue._id}`, 700);
+  } catch(err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Submit Issue Report';
+  }
+}
+</script>
+</body>
+</html>
