@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>FixMyCity — Municipal Profile</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body>
+<div id="toasts"></div>
+<div class="sb-overlay" id="sb-overlay"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-mark" style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">🏛️</div>
+      <span class="sb-name">Municipal <span>Portal</span></span>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-item" onclick="window.location.href='dashboard.html'"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+      <div class="sb-item active"><i class="ti ti-user-circle"></i>My Profile</div>
+      <div class="sb-item" data-action="logout"><i class="ti ti-logout"></i>Logout</div>
+    </nav>
+    <div class="sb-foot"><div class="sb-user" id="sidebar-user"></div></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="ham" id="ham-btn"><i class="ti ti-menu-2"></i></div>
+      <div class="topbar-logo">🏛️ Municipal <span>Portal</span></div>
+      <span class="topbar-title">My Profile</span>
+    </header>
+
+    <div class="page">
+      <div class="wrap">
+
+        <!-- Profile card -->
+        <div class="card mb-4">
+          <div class="p-banner"></div>
+          <div style="position:relative">
+            <div class="p-av-wrap" id="p-av" onclick="document.getElementById('av-inp').click()" title="Click to change photo">
+              <span id="p-initials" style="font-size:1.6rem;font-weight:700"></span>
+            </div>
+            <input type="file" id="av-inp" accept="image/*" style="display:none" onchange="handleAvatar(this)">
+          </div>
+          <div class="p-info">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+              <div>
+                <div class="p-name" id="p-name">Loading…</div>
+                <div class="p-sub" id="p-sub"></div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="save-av-btn" style="display:none" onclick="uploadAvatar()">
+                <i class="ti ti-upload"></i> Save Photo
+              </button>
+            </div>
+            <div id="p-area" style="font-size:.82rem;color:var(--t3);margin-top:8px;display:flex;align-items:center;gap:5px"></div>
+            <div class="p-stats mt-3">
+              <div class="p-stat"><div class="val" id="s-resolved">0</div><div class="lbl">Issues Resolved</div></div>
+              <div class="p-stat"><div class="val" id="s-since">—</div><div class="lbl">Member Since</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="fbar mb-3">
+          <div class="chip on" onclick="switchTab('settings',this)">⚙️ Settings</div>
+          <div class="chip" onclick="switchTab('security',this)">🔒 Security</div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="tab-settings">
+          <div class="card">
+            <div class="card-head"><h4>Edit Profile</h4></div>
+            <div class="card-body">
+              <div class="frow">
+                <div class="fg">
+                  <label class="label">Full Name</label>
+                  <input class="inp" id="e-name" placeholder="Your name">
+                </div>
+                <div class="fg">
+                  <label class="label">Phone</label>
+                  <input class="inp" id="e-phone" placeholder="10-digit mobile">
+                </div>
+              </div>
+              <div class="fg">
+                <label class="label">Bio / Notes <span style="color:var(--t3);font-weight:400">(Employee ID, Department)</span></label>
+                <textarea class="ta" id="e-bio" rows="3" maxlength="200"></textarea>
+                <div class="form-hint"><span id="bio-cnt">0</span>/200</div>
+              </div>
+              <div style="text-align:right">
+                <button class="btn btn-primary" onclick="saveProfile()">
+                  <i class="ti ti-check"></i> Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECURITY -->
+        <div id="tab-security" style="display:none">
+          <div class="card mb-3">
+            <div class="card-head"><h4>Change Password</h4></div>
+            <div class="card-body">
+              <div class="fg">
+                <label class="label">Current Password</label>
+                <input class="inp" type="password" id="cur-pwd" placeholder="Enter current password">
+              </div>
+              <div class="frow">
+                <div class="fg">
+                  <label class="label">New Password</label>
+                  <input class="inp" type="password" id="new-pwd" placeholder="Min 6 chars">
+                </div>
+                <div class="fg">
+                  <label class="label">Confirm New Password</label>
+                  <input class="inp" type="password" id="conf-pwd" placeholder="Re-enter">
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="changePwd()">
+                <i class="ti ti-lock-check"></i> Update Password
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="border:1px solid rgba(239,68,68,.2)">
+            <div class="card-head"><h4 style="color:var(--red)">Danger Zone</h4></div>
+            <div class="card-body flex items-c just-b" style="flex-wrap:wrap;gap:12px">
+              <div>
+                <div style="font-weight:500;margin-bottom:2px">Sign Out</div>
+                <div style="font-size:.78rem;color:var(--t3)">Sign out of the municipal portal</div>
+              </div>
+              <button class="btn btn-danger btn-sm" data-action="logout"><i class="ti ti-logout"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<nav class="bottom-nav">
+  <div class="bn-row">
+    <div class="bn-tab" onclick="window.location.href='dashboard.html'"><i class="ti ti-layout-dashboard"></i><span>Dashboard</span></div>
+    <div class="bn-tab active"><i class="ti ti-user-circle"></i><span>Profile</span></div>
+  </div>
+</nav>
+
+<script src="../js/app.js"></script>
+<script>
+let avatarFile = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!requireAuth()) return;
+  try {
+    const r = await api.get('/auth/me');
+    Auth.set(Auth.getToken(), r.user);
+    renderProfile(r.user);
+    prefill(r.user);
+  } catch {
+    const u = Auth.getUser();
+    if (u) { renderProfile(u); prefill(u); }
+  }
+});
+
+function renderProfile(u) {
+  const av = document.getElementById('p-av');
+  const init = document.getElementById('p-initials');
+  if (u.profilePhoto?.url) {
+    av.innerHTML = `<img src="${u.profilePhoto.url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="">`;
+  } else {
+    init.textContent = initials(u.name);
+  }
+  document.getElementById('p-name').textContent = u.name;
+  document.getElementById('p-sub').textContent = `🏛️ Municipal Worker · ${u.email}`;
+  const area = u.municipalArea;
+  if (area?.city) {
+    document.getElementById('p-area').innerHTML = `<i class="ti ti-building-community"></i>Assigned Area: ${area.city}, ${area.district}, ${area.state}`;
+  }
+  document.getElementById('s-resolved').textContent = u.issuesResolved || 0;
+  document.getElementById('s-since').textContent = new Date(u.createdAt||Date.now()).toLocaleDateString('en-IN',{month:'short',year:'numeric'});
+}
+
+function prefill(u) {
+  document.getElementById('e-name').value  = u.name||'';
+  document.getElementById('e-phone').value = u.phone||'';
+  document.getElementById('e-bio').value   = u.bio||'';
+  document.getElementById('bio-cnt').textContent = (u.bio||'').length;
+}
+
+document.getElementById('e-bio')?.addEventListener('input', function() {
+  document.getElementById('bio-cnt').textContent = this.value.length;
+});
+
+function handleAvatar(input) {
+  if (!input.files[0]) return;
+  avatarFile = input.files[0];
+  const url = URL.createObjectURL(avatarFile);
+  document.getElementById('p-av').innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="">`;
+  document.getElementById('save-av-btn').style.display = 'flex';
+  toast('Click "Save Photo" to upload','info');
+}
+
+async function uploadAvatar() {
+  if (!avatarFile) return;
+  const btn = document.getElementById('save-av-btn');
+  btn.disabled=true; btn.innerHTML='<span class="btn-spin"></span> Uploading…';
+  const fd = new FormData();
+  fd.append('photo', avatarFile);
+  try {
+    const r = await api.uploadPut('/users/profile', fd);
+    Auth.set(Auth.getToken(), r.user);
+    toast('Profile photo updated! 🎉','ok');
+    btn.style.display='none'; avatarFile=null;
+  } catch(err) { toast(err.message,'err'); }
+  finally { btn.disabled=false; btn.innerHTML='<i class="ti ti-upload"></i> Save Photo'; }
+}
+
+async function saveProfile() {
+  const body = {
+    name:  document.getElementById('e-name').value.trim(),
+    phone: document.getElementById('e-phone').value.trim(),
+    bio:   document.getElementById('e-bio').value.trim(),
+  };
+  if (!body.name) { toast('Name cannot be empty','err'); return; }
+  try {
+    const r = await api.put('/users/profile-text', body);
+    Auth.set(Auth.getToken(), r.user);
+    renderProfile(r.user);
+    toast('Profile updated! ✅','ok');
+  } catch(err) { toast(err.message,'err'); }
+}
+
+async function changePwd() {
+  const cur=document.getElementById('cur-pwd').value;
+  const nw=document.getElementById('new-pwd').value;
+  const cf=document.getElementById('conf-pwd').value;
+  if (!cur||!nw) { toast('All fields required','err'); return; }
+  if (nw!==cf)  { toast('Passwords do not match','err'); return; }
+  if (nw.length<6) { toast('Min 6 characters','err'); return; }
+  try {
+    await api.put('/auth/change-password', { currentPassword:cur, newPassword:nw });
+    toast('Password changed! 🔒','ok');
+    ['cur-pwd','new-pwd','conf-pwd'].forEach(id => document.getElementById(id).value='');
+  } catch(err) { toast(err.message,'err'); }
+}
+
+function switchTab(tab, btn) {
+  ['settings','security'].forEach(t => document.getElementById(`tab-${t}`).style.display = t===tab?'block':'none');
+  document.querySelectorAll('.fbar .chip').forEach(c=>c.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+}
+</script>
+</body>
+</html>
